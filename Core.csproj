@@ -26,11 +26,4 @@
     <Exec Command="npm run buildcss:dev" Condition=" '$(Configuration)' == 'Debug' " />
     <Exec Command="npm run buildcss:release" Condition=" '$(Configuration)' == 'Release' " />
   </Target>
-
-  <ItemGroup>
-    <UpToDateCheckBuilt Include="wwwroot/css/app.css" Set="Css" />
-    <UpToDateCheckBuilt Include="postcss.config.js" Set="Css" />
-    <UpToDateCheckBuilt Include="tailwind.config.js" Set="Css" />
-  </ItemGroup>
-    
 </Project>
