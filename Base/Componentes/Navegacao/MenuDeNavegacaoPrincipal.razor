@@ -1,3 +1,5 @@
+@using System.Runtime.InteropServices
+@inject NavigationManager NavigationManager
 @namespace Core.Base.Componentes.Navegacao
 
 <nav class="dark:bg-grey-light">
@@ -17,7 +19,6 @@
               focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white
             "
         >
-          <span class="sr-only">Open main menu</span>
           @* <MenuIcon v-if="!open" class="block h-6 w-6" aria-hidden="true" /> *@
           @* <XIcon v-else class="block h-6 w-6" aria-hidden="true" /> *@
         </div>
@@ -44,17 +45,14 @@
         </div>
         <div class="hidden sm:block sm:ml-6">
           <div class="flex space-x-4">
-            <NavLink
-              href="quest"
-              :class="[
-                  item.current
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 dark:text-white hover:bg-gray-700 hover:text-white',
-                  'px-3 py-2 rounded-md text-sm font-medium',
-                ]"
-              :aria-current="item.current ? 'page' : undefined"
-            >Quest
-            </NavLink>
+            @foreach (var rota in Rotas)
+            {
+              <NavLink
+                href="@rota.Href"
+                class="@ObterClassesDaRota(rota.Href)">
+                @rota.Nome
+              </NavLink>
+            }
           </div>
         </div>
       </div>
@@ -169,23 +167,39 @@
       </div>
     </div>
   </div>
-
-  <div class="sm:hidden">
-    <div class="px-2 pt-2 pb-3 space-y-1">
-      <div
-        v-for="item in navigation"
-        :key="item.name"
-        :to="item.route"
-        :name="item.route.name"
-        :class="[
-            item.current
-              ? 'bg-gray-900 text-white'
-              : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-            'block px-3 py-2 rounded-md text-base font-medium',
-          ]"
-        :aria-current="item.current ? 'page' : undefined"
-      >{{ item.name }}</div
-      >
-    </div>
-  </div>
 </nav>
+
+@code {
+  private class Rota
+  {
+    public string Href { get; init; }
+    public string Nome { get; init; }
+
+    public Rota(string href, string nome)
+    {
+      Href = href;
+      Nome = nome;
+    }
+  }
+
+  private Rota[] Rotas = { 
+    new("inicio", "Inicio"),
+    new("quest", "Quest")
+  };
+
+  private string ObterClassesDaRota(string href)
+  {
+    return "px-3 py-2 rounded-md text-sm font-medium " +
+           (IsActive(href)
+             ? "bg-gray-900 text-white"
+             : "text-gray-700 dark:text-white hover:bg-gray-700 hover:text-white");
+  }
+
+  protected override void OnInitialized() => NavigationManager.LocationChanged += (s, e) => StateHasChanged();
+
+  bool IsActive(string href, NavLinkMatch navLinkMatch = NavLinkMatch.Prefix)
+  {
+    var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).ToLower();
+    return navLinkMatch == NavLinkMatch.All ? relativePath == href.ToLower() : relativePath.StartsWith(href.ToLower());
+  }
+}
